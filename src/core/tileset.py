@@ -3,7 +3,7 @@ from . import picklable
 
 
 class Tileset(picklable.Picklable):
-    def __init__(self, image: pygame.Surface, tileSize):
+    def __init__(self, image: pygame.Surface, tileSize: int):
         self.image = image
         self.tileSize = tileSize
         self.width, self.height = self.image.get_size()
