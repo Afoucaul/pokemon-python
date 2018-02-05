@@ -6,9 +6,6 @@ class PicklableError(Exception):
 
 
 class Pickable:
-    def __init__(self, *args, **kwargs):
-        raise NotImplementedError
-
     @classmethod
     def load(cls, path):
         with open(path, 'rb') as source:
