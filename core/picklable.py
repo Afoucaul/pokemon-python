@@ -5,7 +5,7 @@ class PicklableError(Exception):
     pass
 
 
-class Pickable:
+class Picklable:
     @classmethod
     def load(cls, path):
         with open(path, 'rb') as source:
