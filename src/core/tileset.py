@@ -1,37 +1,27 @@
 import pygame
-from PIL import Image, ImageTk
-from . import picklable
+
+from .picklable import Picklable
 
 
-class Tileset(picklable.Picklable):
-    def __init__(self, image, tileSize):
-        self.image = image
+class Tileset(Picklable):
+    def __init__(self, imagePath, tileSize):
+        self._prepare_image(imagePath)
         self.tileSize = tileSize
-        self.width, self.height = self.image.get_size()
-        self.columnsCount = self.width / self.tileSize
+        self.columnCount = self.width // self.tileSize
+        self.rowCount = self.height // self.tileSize
 
     def __getitem__(self, index):
         return self._get_tile(index)
 
 
-class TkTileset(Tileset):
-    def _get_tile(self, index):
-        row = index % self.columnsCount
-        column = index // self.columnsCount
-
-        rectangle = (
-            row * self.tileSize,
-            column * self.tileSize,
-            (row + 1) * self.tileSize,
-            (column + 1) * self.tileSize)
-        tile = self.image.crop(rectangle)
-        return ImageTk.PhotoImage(tile)
-
-
 class PygameTileset(Tileset):
+    def _prepare_image(self, imagePath):
+        self.image = pygame.image.load(imagePath)
+        self.height = self.image.get_height()
+
     def _get_tile(self, index):
-        row = index % self.columnsCount
-        column = index // self.columnsCount
+        row = index % self.columnCount
+        column = index // self.columnCount
 
         rectangle = (-row * self.tileSize, -column * self.tileSize)
         tile = pygame.Surface((self.tileSize, self.tileSize), pygame.SRCALPHA)
