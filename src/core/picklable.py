@@ -12,16 +12,17 @@ class PicklableOptions(BinaryEnum):
 
 
 class Picklable:
-    def __init__(self, picklePath, options):
+    def __init__(self):
         """Attributes defined by Picklable.load"""
-        self.picklePath = picklePath
-        self.options = options
+        self.picklePath = ""
+        self.options = 0
 
     @classmethod
     def load(cls, path, options=0):
         with open(path, 'rb') as source:
             obj = pickle.load(source)
-            obj.__init__(path, options)
+            obj.picklePath = path
+            obj.options = options
             return obj
 
     def dump(self, path=None):
