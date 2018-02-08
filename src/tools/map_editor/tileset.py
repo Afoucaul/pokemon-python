@@ -1,6 +1,6 @@
 from core.tileset import Tileset
 
-from PIL import Image, ImageTk
+from PIL import Image
 
 
 class TkTileset(Tileset):
@@ -8,7 +8,6 @@ class TkTileset(Tileset):
         super().__init__(imagePath, tileSize)
         self.tileHeight = tileSize
         self.tileWidth = tileSize
-        self._prepare_tiles()
 
     def resize(self, tileWidth, tileHeight=None):
         self.tileWidth = tileWidth
@@ -16,11 +15,6 @@ class TkTileset(Tileset):
             self.tileHeight = self.tileWidth
         else:
             self.tileHeight = tileHeight
-
-    def _prepare_tiles(self):
-        self._tiles = [self._get_tile(i*self.columnCount + j)
-                       for i in range(self.rowCount)
-                       for j in range(self.columnCount)]
 
     def _prepare_image(self, imagePath):
         self.image = Image.open(imagePath)
@@ -38,10 +32,5 @@ class TkTileset(Tileset):
             (column + 1) * self.tileSize)
         tile = self.image.crop(rectangle)
         tile = tile.resize((self.tileWidth, self.tileHeight))
-
-        return tile
-
-    def __getitem__(self, index):
-        tile = self._get_tile(index)
 
         return tile
