@@ -52,6 +52,7 @@ class App(tk.Tk):
     def load_overworld(self, path):
         print("Loading map from {}...".format(path))
         self.overworld = Overworld.load(path)
+        self.mapFrame.do_bindings()
         self.mapFrame.clear()
         self.mapFrame.draw()
         self.mapFrame.radiobuttons.reset()
@@ -65,6 +66,7 @@ class App(tk.Tk):
 
     def close_overworld(self):
         self.mapFrame.clear()
+        self.mapFrame.undo_bindings()
         self.overworld = None
 
     def run(self):

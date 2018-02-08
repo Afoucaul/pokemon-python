@@ -35,6 +35,7 @@ class MainMenu(tk.Menu):
 
     def map_save_command(self):
         print("Saving map...")
+        app.App.instance.save_overworld()
 
     def map_save_as_command(self):
         print("Saving map as...")
