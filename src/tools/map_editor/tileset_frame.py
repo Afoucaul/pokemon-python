@@ -6,7 +6,7 @@ import app
 
 class TilesetFrame(tk.Frame):
     select_style = {'width': 5, 'outline': "blue"}
-    hover_style = {'fill': "blue", 'stipple': "gray10", 'width': 0}
+    hover_style = {'fill': "blue", 'stipple': "gray25", 'width': 0}
 
     def __init__(self, master, tileSize=64, tilesPerRow=4):
         super().__init__(master)
@@ -18,6 +18,7 @@ class TilesetFrame(tk.Frame):
         self.canvas.hover_rectangle = None
         self.canvas.selected_tile = None
         self.canvas.select_rectangle = None
+        self.canvas.tiles = None
         self.vbar = tk.Scrollbar(self, orient=tk.VERTICAL)
 
         self.vbar.pack(side=tk.RIGHT, fill=tk.Y)
@@ -29,6 +30,10 @@ class TilesetFrame(tk.Frame):
         self.canvas.bind("<Button-1>", self.on_click_canvas)
         self.canvas.bind("<Motion>", self.on_motion_canvas)
         self.canvas.bind("<Leave>", self.on_leave_canvas)
+
+    def selected_tile(self):
+        if self.canvas.selected_tile is not None:
+            return self.canvas.tiles[self.canvas.selected_tile]
 
     def _configure(self):
         self.canvas.config(
@@ -92,9 +97,14 @@ class TilesetFrame(tk.Frame):
                 self.canvas.hovered_tile = tileId
                 rectangle = self.canvas.bbox(tk.CURRENT)
                 self.canvas.hover_rectangle = self.canvas.create_rectangle(
-                    *rectangle, fill="blue", width=0, stipple="gray50")
+                    *rectangle, **self.hover_style)
 
     def on_leave_canvas(self, event):
         self.canvas.delete(self.canvas.hover_rectangle)
         self.canvas.hover_rectangle = None
         self.canvas.hovered_tile = None
+
+    def get_tile(self, index):
+        for tileId, tile in self.canvas.tiles.values():
+            if tileId == index:
+                return tile

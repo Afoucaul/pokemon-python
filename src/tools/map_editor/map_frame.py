@@ -48,7 +48,7 @@ class MapFrame(tk.Frame):
     def draw(self):
         if app.App.instance.tileset and app.App.instance.overworld:
             self._draw_grid()
-            # self._draw_map()
+            self._draw_map()
             self._configure()
 
     def canvas_to_map_coordinates(self, xClick, yClick):
@@ -64,8 +64,10 @@ class MapFrame(tk.Frame):
 
     def draw_tile(self, x, y, tileId, tile):
         self.currentLayer[x, y] = tileId
+
         if self.currentGraphicalLayer[x, y] != -1:
             self.canvas.delete(self.currentGraphicalLayer[x, y])
+
         self.currentGraphicalLayer[x, y] = self.canvas.create_image(
             2 + x * (self.tileSize + 1),
             2 + y * (self.tileSize + 1),
@@ -116,6 +118,9 @@ class MapFrame(tk.Frame):
     def on_layer_selected(self, *_):
         selected_layer = self.radiobuttons.get()
         layer = self.labelToLayer[selected_layer]
+        self.select_layer(layer)
+
+    def select_layer(self, layer):
         self.currentLayer = getattr(app.App.instance.overworld, layer)
         self.currentGraphicalLayer = self.graphicalLayers[layer]
         print("Selected {}".format(layer))
@@ -132,6 +137,22 @@ class MapFrame(tk.Frame):
         for j in range(width + 1):
             step = 1 + j * (self.tileSize + 1)
             self.canvas.create_line(step, 1, step, canvasHeight)
+
+    def _draw_map(self):
+        print("Drawing map...")
+
+        overworld = app.App.instance.overworld
+        tileset = app.App.instance.tilesetFrame
+
+        for layerName in ["lowerTiles", "upperTiles", "collisions"]:
+            layer = getattr(overworld, layerName)
+            self.select_layer(layerName)
+            it = np.nditer(layer, flags=['multi_index'])
+            while not it.finished:
+                tileId = int(it[0])
+                tile = tileset.get_tile(tileId)
+                self.draw_tile(*it.multi_index, tileId, tile)
+                it.iternext()
 
     def _configure(self):
         height, width = app.App.instance.overworld.size
