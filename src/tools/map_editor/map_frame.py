@@ -3,7 +3,7 @@ import numpy as np
 from collections import OrderedDict
 
 import app
-from radiobutton_panel import RadiobuttonPanel
+from utils import RadiobuttonPanel
 
 
 class MapFrame(tk.Frame):
@@ -45,6 +45,10 @@ class MapFrame(tk.Frame):
         self.canvas.bind("<ButtonRelease-1>", self.on_click_up_canvas)
         self.radiobuttons.trace(self.on_layer_selected)
 
+    def clear(self):
+        self.clear_graphical_layers()
+        self.currentLayer = None
+
     def draw(self):
         if app.App.instance.tileset and app.App.instance.overworld:
             self._draw_grid()
@@ -58,9 +62,13 @@ class MapFrame(tk.Frame):
         overworld = app.App.instance.overworld
         for k, v in self.graphicalLayers.items():
             if v is not None:
-                for imageId in v.flat():
+                for imageId in v.flat:
                     self.canvas.delete(imageId)
-            self.graphicalLayers[k] = -np.ones(getattr(overworld, k).shape)
+            self.graphicalLayers[k] = -np.ones(
+                getattr(overworld, k).shape, dtype=np.int16)
+
+        self.currentGraphicalLayer = None
+        print("Cleared graphical layers.")
 
     def draw_tile(self, x, y, tileId, tile):
         self.currentLayer[x, y] = tileId
@@ -73,6 +81,8 @@ class MapFrame(tk.Frame):
             2 + y * (self.tileSize + 1),
             image=tile,
             anchor="nw")
+
+        self._reorder_stack(x, y)
 
     def draw_current_tile(self, xCanvas, yCanvas):
         x, y = self.canvas_to_map_coordinates(xCanvas, yCanvas)
@@ -95,12 +105,10 @@ class MapFrame(tk.Frame):
             *rectangle, self.hover_style)
 
     def on_click_down_canvas(self, event):
-        print("Click down")
         self.clicked = True
         self.draw_current_tile(event.x, event.y)
 
     def on_click_up_canvas(self, event):
-        print("Click up")
         self.clicked = False
 
     def on_motion_canvas(self, event):
@@ -150,9 +158,14 @@ class MapFrame(tk.Frame):
             it = np.nditer(layer, flags=['multi_index'])
             while not it.finished:
                 tileId = int(it[0])
-                tile = tileset.get_tile(tileId)
-                self.draw_tile(*it.multi_index, tileId, tile)
+                if tileId != -1:
+                    tile = tileset.get_tile(tileId)
+                    self.draw_tile(*it.multi_index, tileId, tile)
                 it.iternext()
+
+    def _reorder_stack(self, x, y):
+        for layerName in self.labelToLayer.values():
+            self.canvas.lift(self.graphicalLayers[layerName][x, y])
 
     def _configure(self):
         height, width = app.App.instance.overworld.size
