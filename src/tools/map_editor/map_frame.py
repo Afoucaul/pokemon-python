@@ -19,6 +19,8 @@ class MapFrame(tk.Frame):
         self.tileSize = tileSize
         self.currentLayer = None
         self.graphicalLayers = {v: None for v in self.labelToLayer.values()}
+        self.currentGraphicalLayer = None
+        self.clicked = False
 
         self.canvas = tk.Canvas(self)
         self.canvas.hovered_cell = None
@@ -37,9 +39,10 @@ class MapFrame(tk.Frame):
         self.canvas.config(
             xscrollcommand=self.hbar.set, yscrollcommand=self.vbar.set)
 
-        self.canvas.bind("<Button-1>", self.on_click_canvas)
         self.canvas.bind("<Motion>", self.on_motion_canvas)
         self.canvas.bind("<Leave>", self.on_leave_canvas)
+        self.canvas.bind("<ButtonPress-1>", self.on_click_down_canvas)
+        self.canvas.bind("<ButtonRelease-1>", self.on_click_up_canvas)
         self.radiobuttons.trace(self.on_layer_selected)
 
     def draw(self):
@@ -59,44 +62,63 @@ class MapFrame(tk.Frame):
                     self.canvas.delete(imageId)
             self.graphicalLayers[k] = -np.ones(getattr(overworld, k).shape)
 
-    def on_click_canvas(self, event):
-        x, y = self.canvas_to_map_coordinates(event.x, event.y)
+    def draw_tile(self, x, y, tileId, tile):
+        self.currentLayer[x, y] = tileId
+        if self.currentGraphicalLayer[x, y] != -1:
+            self.canvas.delete(self.currentGraphicalLayer[x, y])
+        self.currentGraphicalLayer[x, y] = self.canvas.create_image(
+            2 + x * (self.tileSize + 1),
+            2 + y * (self.tileSize + 1),
+            image=tile,
+            anchor="nw")
+
+    def draw_current_tile(self, xCanvas, yCanvas):
+        x, y = self.canvas_to_map_coordinates(xCanvas, yCanvas)
         r = app.App.instance.tilesetFrame.selected_tile()
         if r is not None:
             tileId, tile = r
-            self.currentLayer[x, y] = tileId
-            self.canvas.create_image(
-                2 + x * (self.tileSize + 1),
-                2 + y * (self.tileSize + 1),
-                image=tile,
-                anchor="nw")
+            self.draw_tile(x, y, tileId, tile)
 
         self.canvas.hovered_cell = None
-        self.on_motion_canvas(event)
+        self.draw_selection_rectangle(x, y)
 
-    def on_layer_selected(self, *_):
-        selected_layer = self.radiobuttons.get()
-        layer = self.labelToLayer[selected_layer]
-        self.currentLayer = getattr(app.App.instance.overworld, layer)
-        print("Selected {}".format(layer))
+    def draw_selection_rectangle(self, x, y):
+        self.canvas.delete(self.canvas.hover_rectangle)
+        self.canvas.hovered_cell = (x, y)
+        rectangle = (2 + x * (self.tileSize + 1),
+                     2 + y * (self.tileSize + 1),
+                     2 + (x + 1) * (self.tileSize + 1),
+                     2 + (y + 1) * (self.tileSize + 1))
+        self.canvas.hover_rectangle = self.canvas.create_rectangle(
+            *rectangle, self.hover_style)
+
+    def on_click_down_canvas(self, event):
+        print("Click down")
+        self.clicked = True
+        self.draw_current_tile(event.x, event.y)
+
+    def on_click_up_canvas(self, event):
+        print("Click up")
+        self.clicked = False
 
     def on_motion_canvas(self, event):
         x, y = self.canvas_to_map_coordinates(event.x, event.y)
-
-        if (x, y) != self.canvas.hovered_cell:
-            self.canvas.delete(self.canvas.hover_rectangle)
-            self.canvas.hovered_cell = (x, y)
-            rectangle = (2 + x * (self.tileSize + 1),
-                         2 + y * (self.tileSize + 1),
-                         2 + (x + 1) * (self.tileSize + 1),
-                         2 + (y + 1) * (self.tileSize + 1))
-            self.canvas.hover_rectangle = self.canvas.create_rectangle(
-                *rectangle, self.hover_style)
+        if self.clicked:
+            self.draw_current_tile(event.x, event.y)
+        elif (x, y) != self.canvas.hovered_cell:
+            self.draw_selection_rectangle(x, y)
 
     def on_leave_canvas(self, event):
         self.canvas.delete(self.canvas.hover_rectangle)
         self.canvas.hover_rectangle = None
         self.canvas.hovered_tile = None
+
+    def on_layer_selected(self, *_):
+        selected_layer = self.radiobuttons.get()
+        layer = self.labelToLayer[selected_layer]
+        self.currentLayer = getattr(app.App.instance.overworld, layer)
+        self.currentGraphicalLayer = self.graphicalLayers[layer]
+        print("Selected {}".format(layer))
 
     def _draw_grid(self):
         height, width = app.App.instance.overworld.size
