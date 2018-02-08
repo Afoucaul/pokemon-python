@@ -54,6 +54,7 @@ class App(tk.Tk):
         self.mapFrame.clear()
         self.mapFrame.draw()
         self.mapFrame.radiobuttons.reset()
+        self.title(path.rsplit("/", 1)[-1])
         print("Map loaded.")
 
     def save_overworld(self, path=None):
