@@ -39,11 +39,18 @@ class MapFrame(tk.Frame):
         self.canvas.config(
             xscrollcommand=self.hbar.set, yscrollcommand=self.vbar.set)
 
+    def do_bindings(self):
         self.canvas.bind("<Motion>", self.on_motion_canvas)
         self.canvas.bind("<Leave>", self.on_leave_canvas)
         self.canvas.bind("<ButtonPress-1>", self.on_click_down_canvas)
         self.canvas.bind("<ButtonRelease-1>", self.on_click_up_canvas)
         self.radiobuttons.trace(self.on_layer_selected)
+
+    def undo_bindings(self):
+        self.canvas.unbind("<Motion>")
+        self.canvas.unbind("<Leave>")
+        self.canvas.unbind("<ButtonPress-1>")
+        self.canvas.unbind("<ButtonRelease-1>")
 
     def clear(self):
         self.clear_graphical_layers()
