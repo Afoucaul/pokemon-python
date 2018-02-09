@@ -78,18 +78,21 @@ class MapFrame(tk.Frame):
         print("Cleared graphical layers.")
 
     def draw_tile(self, x, y, tileId, tile):
-        self.currentLayer[x, y] = tileId
+        xLayer, yLayer = self.currentLayer.shape
 
-        if self.currentGraphicalLayer[x, y] != -1:
-            self.canvas.delete(self.currentGraphicalLayer[x, y])
+        if 0 <= x < xLayer and 0 <= y < yLayer:
+            self.currentLayer[x, y] = tileId
 
-        self.currentGraphicalLayer[x, y] = self.canvas.create_image(
-            2 + x * (self.tileSize + 1),
-            2 + y * (self.tileSize + 1),
-            image=tile,
-            anchor="nw")
+            if self.currentGraphicalLayer[x, y] != -1:
+                self.canvas.delete(self.currentGraphicalLayer[x, y])
 
-        self._reorder_stack(x, y)
+            self.currentGraphicalLayer[x, y] = self.canvas.create_image(
+                2 + x * (self.tileSize + 1),
+                2 + y * (self.tileSize + 1),
+                image=tile,
+                anchor="nw")
+
+            self._reorder_stack(x, y)
 
     def draw_current_tile(self, xCanvas, yCanvas):
         x, y = self.canvas_to_map_coordinates(xCanvas, yCanvas)
