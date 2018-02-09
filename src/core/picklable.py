@@ -12,11 +12,6 @@ class PicklableOptions(BinaryEnum):
 
 
 class Picklable:
-    def __init__(self):
-        """Attributes defined by Picklable.load"""
-        self.picklePath = ""
-        self.options = 0
-
     @classmethod
     def load(cls, path, options=0):
         with open(path, 'rb') as source:
@@ -26,7 +21,11 @@ class Picklable:
             return obj
 
     def dump(self, path=None):
-        options = PicklableOptions.get_options(self.options)
+        try:
+            options = PicklableOptions.get_options(self.options)
+        except AttributeError:
+            options = []
+
         if PicklableOptions.READONLY in options:
             raise PicklableError("Cannot dump read-only instance of {}".format(
                 type(self).__name__))
