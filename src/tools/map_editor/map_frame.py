@@ -112,16 +112,20 @@ class MapFrame(tk.Frame):
             *rectangle, self.hover_style)
 
     def on_click_down_canvas(self, event):
+        x = int(self.canvas.canvasx(event.x))
+        y = int(self.canvas.canvasy(event.y))
         self.clicked = True
-        self.draw_current_tile(event.x, event.y)
+        self.draw_current_tile(x, y)
 
     def on_click_up_canvas(self, event):
         self.clicked = False
 
     def on_motion_canvas(self, event):
-        x, y = self.canvas_to_map_coordinates(event.x, event.y)
+        xCanvas = int(self.canvas.canvasx(event.x))
+        yCanvas = int(self.canvas.canvasy(event.y))
+        x, y = self.canvas_to_map_coordinates(xCanvas, yCanvas)
         if self.clicked:
-            self.draw_current_tile(event.x, event.y)
+            self.draw_current_tile(xCanvas, yCanvas)
         elif (x, y) != self.canvas.hovered_cell:
             self.draw_selection_rectangle(x, y)
 
