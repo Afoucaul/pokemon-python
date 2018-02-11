@@ -16,8 +16,8 @@ class TkTileset(Tileset):
         else:
             self.tileHeight = tileHeight
 
-    def _prepare_image(self, imagePath):
-        self.image = Image.open(imagePath)
+    def _prepare_image(self):
+        self.image = Image.open(self.imagePath)
         self.width = self.image.width
         self.height = self.image.height
 

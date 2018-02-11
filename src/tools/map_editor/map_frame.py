@@ -105,14 +105,17 @@ class MapFrame(tk.Frame):
         self.draw_selection_rectangle(x, y)
 
     def draw_selection_rectangle(self, x, y):
-        self.canvas.delete(self.canvas.hover_rectangle)
-        self.canvas.hovered_cell = (x, y)
-        rectangle = (2 + x * (self.tileSize + 1),
-                     2 + y * (self.tileSize + 1),
-                     2 + (x + 1) * (self.tileSize + 1),
-                     2 + (y + 1) * (self.tileSize + 1))
-        self.canvas.hover_rectangle = self.canvas.create_rectangle(
-            *rectangle, self.hover_style)
+        xLayer, yLayer = self.currentLayer.shape
+
+        if 0 <= x < xLayer and 0 <= y < yLayer:
+            self.canvas.delete(self.canvas.hover_rectangle)
+            self.canvas.hovered_cell = (x, y)
+            rectangle = (2 + x * (self.tileSize + 1),
+                         2 + y * (self.tileSize + 1),
+                         2 + (x + 1) * (self.tileSize + 1),
+                         2 + (y + 1) * (self.tileSize + 1))
+            self.canvas.hover_rectangle = self.canvas.create_rectangle(
+                *rectangle, self.hover_style)
 
     def on_click_down_canvas(self, event):
         x = int(self.canvas.canvasx(event.x))
@@ -148,7 +151,7 @@ class MapFrame(tk.Frame):
         print("Selected {}".format(layer))
 
     def _draw_grid(self):
-        height, width = app.App.instance.overworld.size
+        height, width = app.App.instance.overworld.shape
         canvasHeight = height * (self.tileSize + 1)
         canvasWidth = width * (self.tileSize + 1)
 
@@ -182,6 +185,6 @@ class MapFrame(tk.Frame):
             self.canvas.lift(self.graphicalLayers[layerName][x, y])
 
     def _configure(self):
-        height, width = app.App.instance.overworld.size
+        height, width = app.App.instance.overworld.shape
         self.canvas.config(width=1 + width * (self.tileSize + 1))
         self.canvas['scrollregion'] = self.canvas.bbox("all")
