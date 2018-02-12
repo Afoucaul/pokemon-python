@@ -14,13 +14,14 @@ class MapFrame(tk.Frame):
 
     hover_style = {'fill': "red", 'stipple': "gray25", 'width': 0}
 
-    def __init__(self, master, tileSize=64):
+    def __init__(self, master, tileSize=32):
         super().__init__(master)
         self.tileSize = tileSize
         self.currentLayer = None
         self.graphicalLayers = {v: None for v in self.labelToLayer.values()}
         self.currentGraphicalLayer = None
         self.clicked = False
+        self.tiles = []
 
         self.canvas = tk.Canvas(self)
         self.canvas.hovered_cell = None
@@ -62,6 +63,13 @@ class MapFrame(tk.Frame):
             self._draw_map()
             self._configure()
 
+    def on_tileset_load(self):
+        self.tiles = app.App.instance.tileset.get_tiles(self.tileSize)
+        self.do_bindings()
+        self.clear()
+        self.draw()
+        self.radiobuttons.reset()
+
     def canvas_to_map_coordinates(self, xClick, yClick):
         return (xClick-2) // (self.tileSize+1), (yClick-2) // (self.tileSize+1)
 
@@ -77,8 +85,9 @@ class MapFrame(tk.Frame):
         self.currentGraphicalLayer = None
         print("Cleared graphical layers.")
 
-    def draw_tile(self, x, y, tileId, tile):
+    def draw_tile(self, x, y, tileId):
         xLayer, yLayer = self.currentLayer.shape
+        tile = self.tiles[tileId]
 
         if 0 <= x < xLayer and 0 <= y < yLayer:
             self.currentLayer[x, y] = tileId
@@ -96,10 +105,9 @@ class MapFrame(tk.Frame):
 
     def draw_current_tile(self, xCanvas, yCanvas):
         x, y = self.canvas_to_map_coordinates(xCanvas, yCanvas)
-        r = app.App.instance.tilesetFrame.selected_tile()
-        if r is not None:
-            tileId, tile = r
-            self.draw_tile(x, y, tileId, tile)
+        tileId = app.App.instance.tilesetFrame.selected_tile()
+        if tileId is not None:
+            self.draw_tile(x, y, tileId)
 
         self.canvas.hovered_cell = None
         self.draw_selection_rectangle(x, y)
@@ -167,7 +175,7 @@ class MapFrame(tk.Frame):
         print("Drawing map...")
 
         overworld = app.App.instance.overworld
-        tileset = app.App.instance.tilesetFrame
+        tileset = app.App.instance.tileset
 
         for layerName in ["lowerTiles", "upperTiles", "collisions"]:
             layer = getattr(overworld, layerName)
@@ -176,8 +184,7 @@ class MapFrame(tk.Frame):
             while not it.finished:
                 tileId = int(it[0])
                 if tileId != -1:
-                    tile = tileset.get_tile(tileId)
-                    self.draw_tile(*it.multi_index, tileId, tile)
+                    self.draw_tile(*it.multi_index, tileId)
                 it.iternext()
 
     def _reorder_stack(self, x, y):

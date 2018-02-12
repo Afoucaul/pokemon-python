@@ -3,6 +3,7 @@ import os.path
 
 from core.overworld import Overworld
 from core.picklable import PicklableOptions
+from core.tileset import Tileset
 
 import map_frame
 import tileset_frame
@@ -44,7 +45,8 @@ class App(tk.Tk):
 
     def load_tileset(self, path):
         print("Loading tileset from {}...".format(path))
-        self.tileset = TkTileset.load(path, PicklableOptions.READONLY)
+        baseTileset = Tileset.load(path, PicklableOptions.READONLY)
+        self.tileset = TkTileset(baseTileset)
         self.mapFrame.draw()
         self.tilesetFrame.draw()
         print("Tileset loaded.")
@@ -52,10 +54,7 @@ class App(tk.Tk):
     def load_overworld(self, path):
         print("Loading map from {}...".format(path))
         self.overworld = Overworld.load(path)
-        self.mapFrame.do_bindings()
-        self.mapFrame.clear()
-        self.mapFrame.draw()
-        self.mapFrame.radiobuttons.reset()
+        self.mapFrame.on_tileset_load()
         self.title(os.path.basename(path))
         print("Map loaded.")
 

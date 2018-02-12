@@ -1,7 +1,7 @@
 import tkinter as tk
 import tkinter.filedialog as tkfiledialog
 
-from wizards.new_tileset import NewTilesetWizard
+from wizards.new_tileset_wizard import NewTilesetWizard
 
 import app
 

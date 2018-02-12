@@ -1,36 +1,32 @@
 from core.tileset import Tileset
 
-from PIL import Image
+from PIL import Image, ImageTk
 
 
-class TkTileset(Tileset):
-    def __init__(self, imagePath, tileSize):
-        super().__init__(imagePath, tileSize)
-        self.tileHeight = tileSize
-        self.tileWidth = tileSize
+class TkTileset:
+    def __init__(self, tileset: Tileset):
+        self.tileset = tileset
+        self.image = Image.open(self.tileset.imagePath)
+        self.width = self.tileset.image.width
+        self.height = self.tileset.image.height
+        self.columnCount = self.width // self.tileset.tileSize
+        self.rowCount = self.height // self.tileset.tileSize
 
-    def resize(self, tileWidth, tileHeight=None):
-        self.tileWidth = tileWidth
-        if tileHeight is None:
-            self.tileHeight = self.tileWidth
-        else:
-            self.tileHeight = tileHeight
-
-    def _prepare_image(self):
-        self.image = Image.open(self.imagePath)
-        self.width = self.image.width
-        self.height = self.image.height
-
-    def _get_tile(self, index):
+    def get_tile(self, index, size):
         row = index % self.columnCount
         column = index // self.columnCount
 
         rectangle = (
-            row * self.tileSize,
-            column * self.tileSize,
-            (row + 1) * self.tileSize,
-            (column + 1) * self.tileSize)
+            row * self.tileset.tileSize,
+            column * self.tileset.tileSize,
+            (row + 1) * self.tileset.tileSize,
+            (column + 1) * self.tileset.tileSize)
         tile = self.image.crop(rectangle)
-        tile = tile.resize((self.tileWidth, self.tileHeight))
+        tile = tile.resize((size, size))
 
         return tile
+
+    def get_tiles(self, size):
+        return [ImageTk.PhotoImage(self.get_tile(i*self.rowCount + j, size))
+                for i in range(self.rowCount)
+                for j in range(self.columnCount)]

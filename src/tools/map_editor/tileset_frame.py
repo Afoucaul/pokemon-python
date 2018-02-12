@@ -33,7 +33,7 @@ class TilesetFrame(tk.Frame):
 
     def selected_tile(self):
         if self.canvas.selected_tile is not None:
-            return self.canvas.tiles[self.canvas.selected_tile]
+            return self.canvas.tiles[self.canvas.selected_tile][0]
 
     def _configure(self):
         self.canvas.config(
@@ -53,13 +53,13 @@ class TilesetFrame(tk.Frame):
 
     def _draw_tiles(self):
         tileset = app.App.instance.tileset
-        tileset.resize(self.tileSize)
         self.canvas.tiles = {}
 
         for i in range(tileset.rowCount):
             for j in range(tileset.columnCount):
                 index = i*tileset.columnCount + j
-                tile = ImageTk.PhotoImage(tileset[index])
+                tile = ImageTk.PhotoImage(
+                    tileset.get_tile(index, self.tileSize))
                 tileId = self.canvas.create_image(
                     2 + (index % self.tilesPerRow) * (self.tileSize + 1),
                     2 + (index // self.tilesPerRow) * (self.tileSize + 1),
